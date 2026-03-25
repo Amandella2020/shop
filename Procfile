@@ -1,2 +1,2 @@
 
-Web: gunicorn shopcare.wsgi
+web: gunicorn shopcare.wsgi:application
