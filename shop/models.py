@@ -1,7 +1,8 @@
 from django.db import models
+from django.contrib.auth.models import User 
 
-# Create your models here.
 
+# For product
 class Product(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
@@ -12,9 +13,11 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
-    
+
+
+# For Order   
 class Order(models.Model):
-    customer_name = models.CharField(max_length=200)
+    user = models.ForeignKey(User, on_delete = models.CASCADE)
     product = models.ForeignKey(Product, on_delete = models.CASCADE)
     quantity = models.IntegerField()
     total_price =  models.FloatField(blank=True, null=True)
@@ -23,3 +26,35 @@ class Order(models.Model):
     def save (self, *args, **kwargs):
         self.total_price = self.product.price * self.quantity
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"
+
+
+# For Shopping cart
+
+# Cart model (one per user)
+class Cart(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Cart"
+
+
+# CartItem model (products inside the cart)
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
+    total_price = models.FloatField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        self.total_price = self.product.price * self.quantity
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.product.name} ({self.quantity})"
+
+    class Meta:
+        unique_together = ('cart', 'product')
