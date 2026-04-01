@@ -21,6 +21,13 @@ class Order(models.Model):
     product = models.ForeignKey(Product, on_delete = models.CASCADE)
     quantity = models.IntegerField()
     total_price =  models.FloatField(blank=True, null=True)
+   
+    # payment
+    payment_status = models.CharField(
+    max_length=20,
+    choices=[('pending', 'Pending'), ('paid', 'Paid')],
+    default='pending'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save (self, *args, **kwargs):
@@ -29,6 +36,8 @@ class Order(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.product.name}"
+    
+    
 
 
 # For Shopping cart
