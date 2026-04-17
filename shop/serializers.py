@@ -1,7 +1,9 @@
 from rest_framework import serializers
-from .models import Product, Order, Cart, CartItem
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.shortcuts import get_object_or_404
+from .models import Product,Order, Cart, CartItem
+
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,9 +12,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta:        
         model = Order
-        fields = ['id', ]
+        fields = ['id', 'user', 'product', 'quantity', 'total_price']
 
 
 class CartItemSerializer(serializers.ModelSerializer):
@@ -20,7 +22,8 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartItem
-        fields  = ['id', 'user', 'product', 'quantity', 'total_price']
+        fields  = ['id', 'product', 'product_name', 'quantity', 'total_price']
+        read_only_fields = ['total_price']
 
 
 
@@ -29,7 +32,7 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'items', 'created_at']
+        fields = ['id', 'items', 'created_at']
 
 
 # Add-to-cart logic
@@ -42,10 +45,10 @@ class AddToCartSerializer(serializers.Serializer):
         product_id = self.validated_data['product_id']
         quantity = self.validated_data['quantity']
 
-        product = Product.objects.get(id=product_id)
+        product = get_object_or_404(Product, id=product_id)
 
         # Get or create cart
-        cart, created = Cart.objects.get_or_create(user=user)
+        cart, created =Cart.objects.get_or_create(user=user)
 
         # Check if item already exists
         cart_item, created = CartItem.objects.get_or_create(
